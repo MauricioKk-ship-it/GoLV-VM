@@ -139,12 +139,12 @@ Commandes prédéfinies
 
 # 🔗 Liens
 
-GitHub Repo
+[GitHub Repo](https://github.com/gopu-inc/GoLV-VM)
 
-PyPI Package
+[PyPI Package](https://pypi.org/project/golv-py/)
 
 
-
+-
 ---
 
 # 📄 License
