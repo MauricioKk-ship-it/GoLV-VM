@@ -1,70 +1,72 @@
-# Fichier : main_golv.py
-"""
-Exemple complet d'utilisation du SDK GoLV
-"""
-import golv
-import sys
-from pathlib import Path
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 
-# Configuration automatique
-try:
-    from golv import GoLVSetup
-    from golv import GoLVAgent
-    
-    def get_golv_agent():
-        """Récupérer l'agent GoLV configuré automatiquement"""
-        setup = GoLVSetup()
-        
-        try:
-            config = setup.get_agent_config()
-            agent = GoLVAgent(config)
-            print(f"✅ Agent GoLV chargé - VM: {agent.vm_id[:12]}...")
-            return agent
-        except FileNotFoundError:
-            print("""
-❌ Configuration GoLV non trouvée.
-   
-   Veuillez d'abord exécuter :
-   
-   python setup_golv.py --register --username VOTRE_NOM --password VOTRE_MOT_DE_PASSE
-   
-   ou
-   
-   python setup_golv.py --login --username VOTRE_NOM --password VOTRE_MOT_DE_PASSE
-            """)
-            sys.exit(1)
-    
-    # Exemple d'utilisation
-    if __name__ == "__main__":
-        print("🚀 Initialisation GoLV Agent...")
-        
-        # Récupérer l'agent configuré
-        agent = get_golv_agent()
-        
-        # Test des commandes
-        print("\n🧪 Test des commandes de base...")
-        
-        # 1. Commande simple
-        result = agent.execute("echo 'Hello GoLV!' && pwd")
-        print(f"Test 1: {result.stdout}")
-        
-        # 2. Python
-        result = agent.execute_python("print('Python working!'); import sys; print(f'Version: {sys.version}')")
-        print(f"Test 2: {result.stdout}")
-        
-        # 3. Git (si autorisé)
-        try:
-            result = agent.execute_git("--version")
-            print(f"Test 3: Git {result.stdout}")
-        except:
-            print("Test 3: Git non disponible ou non autorisé")
-        
-        # 4. Statut de la VM
+from golv import GoLVSetup, VMType, CommandSecurityLevel, SecurityError
+
+def main():
+    print("🚀 Initialisation du SDK GoLV...")
+
+    # ---------- INITIALISATION ----------
+    setup = GoLVSetup()
+    print("SDK Setup:", setup)
+
+    client = setup.get_client()
+    print("Client OK:", client)
+
+    # ---------- CRÉATION DE VM ----------
+    vm_config = setup.create_vm_config(
+        name="test-vm",
+        vm_type=VMType.PYTHON_DEV
+    )
+    print("VMConfig:", vm_config)
+
+    try:
+        vm_data = client.create_vm(vm_config)
+        vm_id = vm_data.get("vm_id")
+        print(f"✅ VM créée avec ID: {vm_id}")
+    except Exception as e:
+        print(f"Erreur création VM: {e}")
+        vm_id = None
+
+    # ---------- CRÉATION AGENT ----------
+    agent = setup.create_agent(
+        vm_config=vm_config,
+        allowed_commands=["echo", "python", "git"],
+        max_command_length=100
+    )
+    print("Agent GoLV créé:", agent)
+
+    # ---------- TEST COMMANDE ECHO ----------
+    try:
+        result = agent.execute("echo 'Hello GoLV'")
+        print("Commande echo output:", result.output)
+    except SecurityError as se:
+        print("Erreur sécurité:", se)
+
+    # ---------- TEST COMMANDE PYTHON ----------
+    python_code = "print('Hello from Python inside VM')"
+    result = agent.execute_python(python_code)
+    print("Commande Python output:", result.output)
+
+    # ---------- TEST COMMANDE INTERDITE ----------
+    try:
+        agent.execute("rm -rf /")  # devrait déclencher SecurityError
+    except SecurityError as se:
+        print("SecurityError détectée comme attendu:", se)
+
+    # ---------- TEST STATUT VM ----------
+    if vm_id:
         status = agent.get_status()
-        print(f"\n📊 Statut VM: {status.get('status', {}).get('status', 'unknown')}")
-        
-        print("\n✅ GoLV est prêt à être utilisé par votre IA!")
-        
-except ImportError as e:
-    print(f"❌ Erreur d'importation : {e}")
-    print("Installez d'abord le SDK: pip install -e .")
+        print("Statut VM:", status)
+
+    # ---------- TEST COMMANDE PREDEFINIE ----------
+    try:
+        predef_result = agent.predefined("list_files")
+        print("Commande prédéfinie output:", predef_result.output)
+    except Exception as e:
+        print("Erreur commande prédéfinie:", e)
+
+    print("✅ Tous les tests sont terminés.")
+
+if __name__ == "__main__":
+    main()
