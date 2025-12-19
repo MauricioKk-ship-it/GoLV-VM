@@ -12,7 +12,7 @@ sdk_path = Path(__file__).parent / "golv"
 if sdk_path.exists():
     sys.path.insert(0, str(sdk_path.parent))
 
-from golv_setup import GoLVSetup
+from golv import GoLVSetup
 
 def main():
     parser = argparse.ArgumentParser(description="Configuration GoLV")
