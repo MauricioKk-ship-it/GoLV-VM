@@ -4,7 +4,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
 setup(
-    name="golv-py",
+    name="golv_setup",
     version="1.0.0",
     author="GOPU.inc",
     author_email="ceoseshell@gmail.com",
