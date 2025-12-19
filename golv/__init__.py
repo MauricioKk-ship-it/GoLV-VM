@@ -8,5 +8,5 @@ __author__ = "GOPU.inc"
 from .client import GoLVClient
 from .agent import GoLVAgent
 from .models import VMConfig, CommandResult
-
-__all__ = ['GoLVClient', 'GoLVAgent', 'VMConfig', 'CommandResult']
+from .setup_golv import GoLVSetup
+__all__ = ['GoLVSetup', 'GoLVClient', 'GoLVAgent', 'VMConfig', 'CommandResult']
