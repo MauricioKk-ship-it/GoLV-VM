@@ -27,7 +27,7 @@ setup(
     python_requires=">=3.8",
     install_requires=[
         "requests>=2.28.0",
-        "pydantic>=1.10",
+        "pydantic>=1.10,<2.0",
     ],
     extras_require={
         "dev": [
